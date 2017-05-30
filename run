@@ -1,0 +1,7 @@
+echo "Removing executable"
+rm ay02
+echo "Building...."
+go build
+echo "Running...."
+./ay02
+
