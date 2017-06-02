@@ -30,13 +30,18 @@ func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("aa2")
 	templates :=template.Must(template.ParseFiles(tmpl_files...))
 	fmt.Println("aa3")
-	ttt, err := TTT()
-	if err == nil {
-		fmt.Println("aaa4_noErr")
-		templates.ExecuteTemplate(w, "layout", ttt)
-	} else {
-		fmt.Println("aaa5_ERR")
-	}
+	ttt, _:= TTT()
+
+	templates.ExecuteTemplate(w, "layout", ttt)
+
+	/*
+		if err == nil {
+			fmt.Println("aaa4_noErr")
+			templates.ExecuteTemplate(w, "layout", ttt)
+		} else {
+			fmt.Println("aaa5_ERR")
+		}
+	*/
 
 }
 func main() {
