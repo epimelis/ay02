@@ -1,7 +1,6 @@
 echo "Removing executable"
-rm ay02
+rm run1
 echo "Building...."
-go build
+go build -o run1
 echo "Running...."
-./ay02
-
+./run1
