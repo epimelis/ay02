@@ -18,30 +18,25 @@ func Threads() (threads []Thread, err error) {
 }
 
 
-func TTT() (_, err error) {
+func dummy() (_, err error) {
 	return
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("aa1")
-	tmpl_files :=[]string  {
-		"layout.html",
-	}
+	tmpl_file1 := "test.html"
+	/*tmpl_files :=[]string  {
+		"test.html",
+	}*/
+
 	fmt.Println("aa2")
-	templates :=template.Must(template.ParseFiles(tmpl_files...))
+	//templates :=template.Must(template.ParseFiles(tmpl_files...))
+	templates :=template.Must(template.ParseFiles(tmpl_file1))
 	fmt.Println("aa3")
-	ttt, _:= TTT()
+	dummy1, _:= dummy()
 
-	templates.ExecuteTemplate(w, "layout", ttt)
+	templates.ExecuteTemplate(w, "layout", dummy1)
 
-	/*
-		if err == nil {
-			fmt.Println("aaa4_noErr")
-			templates.ExecuteTemplate(w, "layout", ttt)
-		} else {
-			fmt.Println("aaa5_ERR")
-		}
-	*/
 
 }
 func main() {
