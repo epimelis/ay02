@@ -9,26 +9,25 @@ func dummy() (_, err error) {
 	return
 }
 
-func index(writer http.ResponseWriter, r *http.Request) {
-	tmpl_file1 := "test1.html"
+func index(writer http.ResponseWriter, request *http.Request) {
+
+	//tmpl_file1 := "test1.html"
+	templates :=template.Must(template.ParseFiles("templates/test1.html"))
+	dummy1, _:= dummy()
+	templates.ExecuteTemplate(writer, "layout", dummy1)
 
 
 	/*
-	tmpl_filesMany :=[]string  {
-		"test1.html",
+	tmpl_files :=[]string  {
+		"layout.html",
 		"test2.html",
 	}
+	templates :=template.Must(template.ParseFiles(tmpl_files...))
+	generateHTML(writer, threads, "layout", "public.navbar", "index")
+	generateHTML(writer, threads, "layout", "private.navbar", "index")
 	*/
 
 
-
-
-	templates :=template.Must(template.ParseFiles(tmpl_file1))
-	//templates2 :=template.Must(template.ParseFiles(tmpl_filesMany...))
-
-	dummy1, _:= dummy()
-	templates.ExecuteTemplate(writer, "layout", dummy1)
-	//templates2.ExecuteTemplate(w, "layout", dummy1)
 
 
 }
@@ -37,12 +36,14 @@ func main() {
 
 	mux :=http.NewServeMux()
 
+	//handling of files must be in main function.
+	//note : found inconsistent behavior if this is inside the index function.
 	files := http.FileServer(http.Dir("public"))
 	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
 	mux.HandleFunc("/", index)
 	server :=&http.Server{
-		Addr: "0.0.0.0:7002",
+		Addr: "0.0.0.0:8000",
 		Handler : mux,
 
 	}
