@@ -11,26 +11,44 @@ func dummy() (_, err error) {
 
 func index(writer http.ResponseWriter, request *http.Request) {
 
+	//---------------------------------
+	/*
 	//tmpl_file1 := "test1.html"
 	templates :=template.Must(template.ParseFiles("templates/test1.html"))
 	dummy1, _:= dummy()
 	templates.ExecuteTemplate(writer, "layout", dummy1)
+	*/
+	//---------------------------------
 
 
-	/*
 	tmpl_files :=[]string  {
-		"layout.html",
-		"test2.html",
+		"templates/layout.html",
+		"templates/public.navbar.html",
+		"templates/index.html",
 	}
 	templates :=template.Must(template.ParseFiles(tmpl_files...))
-	generateHTML(writer, threads, "layout", "public.navbar", "index")
-	generateHTML(writer, threads, "layout", "private.navbar", "index")
+	dummy1, _:= dummy()
+	templates.ExecuteTemplate(writer, "layout", dummy1)
+
+	//---------------------------------
+	/*
+	//generateHTML(writer, threads, "layout", "public.navbar", "index")
+	//generateHTML(writer, threads, "layout", "private.navbar", "index")
+
+	func generateHTML(writer http.ResponseWriter, data interface{}, filenames ...string) {
+	var files []string
+	for _, file := range filenames {
+	files = append(files, fmt.Sprintf("templates/%s.html", file))
+	}
+
+	templates := template.Must(template.ParseFiles(files...))
+	templates.ExecuteTemplate(writer, "layout", data)
 	*/
-
-
-
-
+	//---------------------------------
 }
+
+
+
 func main() {
 	fmt.Println("starting server + mux")
 
