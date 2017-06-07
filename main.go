@@ -100,7 +100,7 @@ func main() {
 
 	mux.HandleFunc("/", index)
 	server :=&http.Server{
-		Addr: "0.0.0.0:8000",
+		Addr: "0.0.0.0:7000",
 		Handler : mux,
 
 	}
