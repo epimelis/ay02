@@ -10,6 +10,8 @@ import (
 	//"time"
 )
 
+var Db *sql.DB
+
 type Thread struct {
 	Id        int
 	Uuid      string
@@ -19,16 +21,24 @@ type Thread struct {
 }
 
 func (thread *Thread) NumReplies() (count int) {
-	rows, err := Db.Query("SELECT count(*) FROM posts where thread_id = $1", thread.Id)
+	fmt.Println("tt0")
+	//Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	rows, err := Db.Query("SELECT count(*) FROM posts where thread_id = ?", thread.Id)
+	fmt.Println("tt1")
 	if err != nil {
+		fmt.Println("tt_err1")
+		log.Fatal(err)
 		return
 	}
 	for rows.Next() {
 		if err = rows.Scan(&count); err != nil {
+			fmt.Println("tt_err2")
+			log.Fatal(err)
 			return
 		}
 	}
 	rows.Close()
+	fmt.Println("tt2")
 	return
 }
 
@@ -38,22 +48,18 @@ func dummy() (_, err error) {
 }
 
 func index(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("bb0")
+	fmt.Println("xx0")
 
 	var threads []Thread
 
-	Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
-	if err != nil {
-		fmt.Println("Error in ee1")
-		log.Fatal(err)
-	}
+	fmt.Println("xx1")
 	rows, err := Db.Query("SELECT id, uuid, topic, user_id FROM threads ORDER BY created_at DESC")
 	if err != nil {
-		fmt.Println("Error in ee3")
+		fmt.Println("xx_err2")
 		log.Fatal(err)
 	}
-	fmt.Println("bb1")
 
+	fmt.Println("xx2")
 	for rows.Next() {
 		conv := Thread{}
 		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId); err != nil {
@@ -63,7 +69,7 @@ func index(writer http.ResponseWriter, request *http.Request) {
 		threads = append(threads, conv)
 	}
 	rows.Close()
-	fmt.Println("bb2")
+	fmt.Println("xx3")
 
 
 	//---------------------------------
@@ -104,7 +110,24 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	//---------------------------------
 }
 
+func init() {
+
+	fmt.Println("init : Open database...")
+	Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	if err != nil {
+		fmt.Println("init_err1")
+		log.Fatal(err)
+	}
+	if Db==nil {
+		fmt.Println("arrrrrgh!")
+	} else {
+		fmt.Println("Db opened successfully....OK!")
+	}
+	return;
+
+}
 func main() {
+
 
 	fmt.Println("starting server + mux")
 
