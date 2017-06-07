@@ -3,13 +3,52 @@ package main
 import("net/http"
 	"fmt"
 	"html/template"
+	"time"
+	"database/sql"
+	"log"
+	_ "github.com/go-sql-driver/mysql"
+
 )
+type Thread struct {
+	Id        int
+	Uuid      string
+	Topic     string
+	UserId    int
+	CreatedAt time.Time
+}
 
 func dummy() (_, err error) {
 	return
 }
 
 func index(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("bb0")
+
+	var threads []Thread
+
+	Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	//Db, err := sql.Open("postgres", dbinfo)
+	if err != nil {
+		fmt.Println("Error in ee1")
+		log.Fatal(err)
+	}
+	rows, err := Db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")
+	if err != nil {
+		fmt.Println("Error in ee2")
+		log.Fatal(err)
+	}
+	fmt.Println("bb1")
+
+	for rows.Next() {
+		conv := Thread{}
+		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt); err != nil {
+			return
+		}
+		threads = append(threads, conv)
+	}
+	rows.Close()
+	fmt.Println("bb2")
+
 
 	//---------------------------------
 	/*
