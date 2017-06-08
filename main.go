@@ -7,22 +7,55 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	//"time"
+	"time"
 )
 
-var Db *sql.DB
-
+var (
+	Db *sql.DB
+)
 type Thread struct {
 	Id        int
 	Uuid      string
 	Topic     string
 	UserId    int
-	//CreatedAt time.Time
+	CreatedAt time.Time
+}
+type User struct {
+	Id int
+	Uuid string
+	Name string
+	Email string
+	Password string
+	CreatedAt time.Time
+}
+type Session struct {
+	Id        int
+	Uuid      string
+	Email     string
+	UserId    int
+	CreatedAt time.Time
+}
+func init() {
+	fmt.Println("init0")
+	var err error
+	//Db, err = sql.Open("postgres", "postgres://user:pass@localhost/bookstore")
+	Db, err = sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+
+	if err != nil {
+		fmt.Println("init_err1")
+		log.Fatal(err)
+	}
+
+	if err = Db.Ping(); err != nil {
+		fmt.Println("init_err2")
+		log.Fatal(err)
+	}
+	fmt.Println("init1")
 }
 
+//Go method - attach a function to thread
 func (thread *Thread) NumReplies() (count int) {
 	fmt.Println("tt0")
-	//Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
 	rows, err := Db.Query("SELECT count(*) FROM posts where thread_id = ?", thread.Id)
 	fmt.Println("tt1")
 	if err != nil {
@@ -42,13 +75,33 @@ func (thread *Thread) NumReplies() (count int) {
 	return
 }
 
+func (thread *Thread) User() (user User) {
+	user=User{}
+	fmt.Println("uu0")
+	Db.QueryRow("select id, uuid, name, email from users where id=?", thread.UserId).Scan(&user.Id, &user.Uuid, &user.Name, &user.Email)
+	fmt.Println("uu1")
+	fmt.Println("-----start---------")
+	fmt.Println(thread.UserId)
+	fmt.Println(user.Name)
+	fmt.Println("-----end--------")
 
+	return
+}
+/*
 func dummy() (_, err error) {
 	return
 }
+*/
+
 
 func index(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("xx0")
+
+	if Db==nil {
+		fmt.Println("Error : Db is nil!!!!!")
+	} else {
+		fmt.Println("Db initialized ...")
+	}
 
 	var threads []Thread
 
@@ -110,6 +163,7 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	//---------------------------------
 }
 
+/*
 func init() {
 
 	fmt.Println("init : Open database...")
@@ -126,11 +180,22 @@ func init() {
 	return;
 
 }
+*/
+
 func main() {
 
 
-	fmt.Println("starting server + mux")
+	fmt.Println("starting db ...")
+	/*Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	if Db==nil {
+		fmt.Println("Error : Db is nil!!!!!")
+		log.Fatal(err)
+	} else {
+		fmt.Println("Db initialized ...")
+	}
+	*/
 
+	fmt.Println("starting server ...")
 	mux := http.NewServeMux()
 
 	//handling of files must be in main function.
