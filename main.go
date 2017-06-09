@@ -39,7 +39,8 @@ func init() {
 	fmt.Println("init0")
 	var err error
 	//Db, err = sql.Open("postgres", "postgres://user:pass@localhost/bookstore")
-	Db, err = sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	//Db, err = sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
+	Db, err = sql.Open("mysql", "ayong:ayong@tcp(127.0.0.1:3306)/test?parseTime=true")
 
 	if err != nil {
 		fmt.Println("init_err1")
@@ -80,33 +81,32 @@ func (thread *Thread) User() (user User) {
 	fmt.Println("uu0")
 	Db.QueryRow("select id, uuid, name, email from users where id=?", thread.UserId).Scan(&user.Id, &user.Uuid, &user.Name, &user.Email)
 	fmt.Println("uu1")
-	fmt.Println("-----start---------")
-	fmt.Println(thread.UserId)
-	fmt.Println(user.Name)
-	fmt.Println("-----end--------")
+
 
 	return
 }
+
 /*
 func dummy() (_, err error) {
 	return
 }
 */
 
+func login(writer http.ResponseWriter, request *http.Request) {
+	tmpl_files := []string {"templates/login.layout.html", "templates/public.navbar.html", "templates/login.html"}
+	templates := template.Must(template.ParseFiles(tmpl_files...))
+	templates.Execute(writer, nil)
+	templates.ExecuteTemplate(writer, "layout", nil)
+
+}
 
 func index(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("xx0")
 
-	if Db==nil {
-		fmt.Println("Error : Db is nil!!!!!")
-	} else {
-		fmt.Println("Db initialized ...")
-	}
-
 	var threads []Thread
 
 	fmt.Println("xx1")
-	rows, err := Db.Query("SELECT id, uuid, topic, user_id FROM threads ORDER BY created_at DESC")
+	rows, err := Db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")
 	if err != nil {
 		fmt.Println("xx_err2")
 		log.Fatal(err)
@@ -114,15 +114,16 @@ func index(writer http.ResponseWriter, request *http.Request) {
 
 	fmt.Println("xx2")
 	for rows.Next() {
-		conv := Thread{}
-		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId); err != nil {
+		th := Thread{}
+		if err = rows.Scan(&th.Id, &th.Uuid, &th.Topic, &th.UserId, &th.CreatedAt); err != nil {
 			log.Fatal(err)
 			return
 		}
-		threads = append(threads, conv)
+		threads = append(threads, th)
 	}
 	rows.Close()
 	fmt.Println("xx3")
+
 
 
 	//---------------------------------
@@ -163,37 +164,30 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	//---------------------------------
 }
 
-/*
-func init() {
+func createThread(writer http.ResponseWriter, request *http.Request) {
+	tmpl_files := []string{
+		"templates/layout.html",
+		"templates/public.navbar.html",
+		"templates/new.thread.html",
+	}
+	templates := template.Must(template.ParseFiles(tmpl_files...))
+	templates.ExecuteTemplate(writer, "layout", nil)
 
-	fmt.Println("init : Open database...")
-	Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
-	if err != nil {
-		fmt.Println("init_err1")
-		log.Fatal(err)
-	}
-	if Db==nil {
-		fmt.Println("arrrrrgh!")
-	} else {
-		fmt.Println("Db opened successfully....OK!")
-	}
-	return;
 
 }
-*/
+func newThread(writer http.ResponseWriter, request *http.Request) {
+
+	tmpl_files := []string{
+		"templates/layout.html",
+		"templates/public.navbar.html",
+		"templates/new.thread.html",
+	}
+	templates := template.Must(template.ParseFiles(tmpl_files...))
+	templates.ExecuteTemplate(writer, "layout", nil)
+}
+
 
 func main() {
-
-
-	fmt.Println("starting db ...")
-	/*Db, err := sql.Open("mysql", "ayong:ayong@/test?charset=utf8")
-	if Db==nil {
-		fmt.Println("Error : Db is nil!!!!!")
-		log.Fatal(err)
-	} else {
-		fmt.Println("Db initialized ...")
-	}
-	*/
 
 	fmt.Println("starting server ...")
 	mux := http.NewServeMux()
@@ -204,6 +198,10 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", files))
 
 	mux.HandleFunc("/", index)
+	mux.HandleFunc("/login", login)
+	mux.HandleFunc("/thread/new", newThread)
+	mux.HandleFunc("/thread/create", createThread)
+
 	server := &http.Server{
 		Addr:    "0.0.0.0:7000",
 		Handler: mux,

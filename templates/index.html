@@ -11,7 +11,7 @@
     </div>
     <div class="panel-body">
         <div class="pull-right">
-            Started by {{ .User.Name }} - << .CreatedAtDate >> - {{ .NumReplies }} posts.
+            Started by {{ .User.Name }} - {{.CreatedAt }} - {{ .NumReplies }} posts.
             <a href="/thread/read?id={{.Uuid }}">Read more</a>
         </div>
     </div>
