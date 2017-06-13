@@ -92,6 +92,7 @@ func dummy() (_, err error) {
 }
 */
 
+/*
 func login(writer http.ResponseWriter, request *http.Request) {
 	tmpl_files := []string {"templates/login.layout.html", "templates/public.navbar.html", "templates/login.html"}
 	templates := template.Must(template.ParseFiles(tmpl_files...))
@@ -99,6 +100,28 @@ func login(writer http.ResponseWriter, request *http.Request) {
 	templates.ExecuteTemplate(writer, "layout", nil)
 
 }
+*/
+
+// parse HTML templates
+// pass in a list of file names, and get a template
+func parseTemplateFiles(filenames ...string) (t *template.Template) {
+	var files []string
+	t = template.New("layout")
+	for _, file := range filenames {
+		files = append(files, fmt.Sprintf("templates/%s.html", file))
+	}
+	t = template.Must(t.ParseFiles(files...))
+	return
+}
+
+func login(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("lll_1")
+	t := parseTemplateFiles("login.layout", "public.navbar", "login")
+	fmt.Println("lll_2")
+	t.Execute(writer, nil)
+	fmt.Println("lll_3")
+}
+
 
 func index(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("xx0")
@@ -164,14 +187,52 @@ func index(writer http.ResponseWriter, request *http.Request) {
 	//---------------------------------
 }
 
+func (user *User) CreateThread(topic string) (conv Thread, err error) {
+	/*
+	fmt.Println("zz1")
+	statement := "insert into threads(topic, user_id, created_at) values ($1, $2, $3, $4) returning id, uuid, topic, user_id, created_at"
+	stmt, err :=Db.Prepare(statement)
+	defer stmt.Close()
+	fmt.Println("zz2")
+	err = stmt.QueryRow(topic, 10, time.Now()).Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
+	fmt.Println("zz3")
+	*/
+
+	fmt.Println("zz1")
+	stmt, err := Db.Prepare("INSERT threads SET topic=?,user_id=?, uuid=?, created_at=?")
+	fmt.Println("zz2")
+	res , err := stmt.Exec(topic, 10, "uuid123", time.Now())
+	fmt.Println("zz2.1")
+	if res==nil {fmt.Println("nil res !!!!")} else  { log.Println(res)}
+	fmt.Println("zz2.2")
+	if err==nil {fmt.Println("nil err !!!!")} else  { log.Fatal(err)}
+	fmt.Println("zz2.3")
+
+
+	fmt.Println("zz3")
+
+
+	return
+
+}
+
 func createThread(writer http.ResponseWriter, request *http.Request) {
-	tmpl_files := []string{
-		"templates/layout.html",
-		"templates/public.navbar.html",
-		"templates/new.thread.html",
+	user :=User{}
+	err :=request.ParseForm()
+	fmt.Println("cc1")
+	if err !=nil {
+		log.Println(err)
 	}
-	templates := template.Must(template.ParseFiles(tmpl_files...))
-	templates.ExecuteTemplate(writer, "layout", nil)
+	fmt.Println("cc2")
+	topic := request.PostFormValue("topic")
+	log.Println(topic)
+
+
+	if _, err :=user.CreateThread(topic); err!=nil {
+		log.Println("cannot create thread!!!")
+	}
+	fmt.Println("cc3")
+	http.Redirect(writer, request, "/", 302)
 
 
 }
